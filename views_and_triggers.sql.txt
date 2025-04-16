@@ -1,0 +1,30 @@
+-- Step 1: Create the audit table \
+CREATE TABLE employee_audit (\
+    auditID INT AUTO_INCREMENT PRIMARY KEY,\
+    employeeNumber INT,\
+    lastName VARCHAR(50),\
+    firstName VARCHAR(50),\
+    jobTitle VARCHAR(50),\
+    email VARCHAR(100),\
+    deletedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP\
+);\
+\
+-- Step 2: Create the trigger\
+DELIMITER //\
+CREATE TRIGGER after_employee_delete\
+AFTER DELETE ON employees\
+FOR EACH ROW\
+BEGIN\
+    INSERT INTO employee_audit (employeeNumber, lastName, firstName, jobTitle, email)\
+    VALUES (OLD.employeeNumber, OLD.lastName, OLD.firstName, OLD.jobTitle, OLD.email);\
+END;\
+//\
+DELIMITER ;\
+\
+-- Step 3: Delete employees 1076 & 1143 (if they exist)\
+DELETE FROM employees WHERE employeeNumber = 1076;\
+DELETE FROM employees WHERE employeeNumber = 1143;\
+\
+-- Step 4: Verify if the deleted employees were logged\
+SELECT * FROM employee_audit ORDER BY deletedAt DESC LIMIT 5;\
+\
